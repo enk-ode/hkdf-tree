@@ -95,7 +95,13 @@ Info-strings are case-sensitive input to HKDF. Establish and document a canonica
   map, determinism contract, trust boundaries.
 - **[Threat model](docs/threat-model.md)** — what the tool protects
   against, what it does not, and the assumptions the guarantees rest on.
+- **[Background](docs/background.md)** — what the derivation is built
+  on, with references (RFC 5869, RFC 2104, EFF wordlist, NIST SP 800-63B).
+- **[Contributing](CONTRIBUTING.md)** — including the determinism
+  contract that any change to derived values is breaking.
 - **[Security policy](SECURITY.md)** — how to report vulnerabilities.
+- **Manual page** — `man hkdf-tree` once installed, or online at
+  <https://enk-ode.github.io/hkdf-tree/>.
 
 ## Roadmap
 
