@@ -1,0 +1,120 @@
+/* Stylesheet for the pandoc-generated vpn-switch(1) man page.
+   No JS, no external fonts. Light + dark, with a calm accent. */
+
+:root {
+  --bg: #fdfdfd;
+  --fg: #24292f;
+  --muted: #57606a;
+  --accent: #1f6feb;
+  --accent-soft: #ddf4ff;
+  --code-bg: #f6f8fa;
+  --border: #d0d7de;
+  --rule: #eaecef;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --fg: #c9d1d9;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-soft: #11233b;
+    --code-bg: #161b22;
+    --border: #30363d;
+    --rule: #21262d;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  max-width: 56rem;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+h1, h2, h3 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.25;
+  margin-top: 2.2rem;
+}
+
+/* Document title (the NAME line renders as the page title) */
+h1 {
+  color: var(--accent);
+  font-size: 1.6rem;
+}
+
+/* Section headings: COMMANDS, ENVIRONMENT, ... */
+h2 {
+  font-size: 1.2rem;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.25em;
+}
+
+/* Sub-sections: Connection, Sessions, Protocol-specific, ... */
+h3 {
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  padding: 0.9em 1.1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+pre code { background: none; border: none; padding: 0; }
+
+/* Definition lists = the command reference (**cmd** / :  description) */
+dl { margin-left: 0.25rem; }
+dt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 1rem;
+}
+dd {
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Bold inline (command words in SYNOPSIS, <proto>, ...) */
+strong, b { color: var(--fg); }
+
+hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+blockquote {
+  margin: 1rem 0;
+  padding: 0.4rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.author, .date { color: var(--muted); font-size: 0.9em; }
+
+/* The standalone title block pandoc emits at the very top */
+header#title-block-header {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}

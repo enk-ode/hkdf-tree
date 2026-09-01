@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="man.css" type="text/css" media="all"/>
+  <title>HKDF-TREE(1)</title>
+</head>
+<!-- This is an automatically generated file.  Do not edit.
+   hkdf-tree \[u2014] deterministic hierarchical passphrase derivation
+   SPDX-License-Identifier: BSD-2-Clause
+ -->
+<body>
+<div class="head" role="doc-pageheader" aria-label="Manual header
+  line"><span class="head-ltitle">HKDF-TREE(1)</span>
+  <span class="head-vol">FreeBSD General Commands Manual</span>
+  <span class="head-rtitle">HKDF-TREE(1)</span></div>
+<main class="manual-text">
+<section class="Sh">
+<h2 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h2>
+<p class="Pp"><code class="Nm">hkdf-tree</code> &#x2014;
+    <span class="Nd" role="doc-subtitle">deterministic hierarchical passphrase
+    derivation from a master seed</span></p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h2>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">hkdf-tree</code></td>
+    <td><code class="Cm">derive</code> [<code class="Fl">--salt</code>
+      <var class="Ar">salt</var>] <code class="Fl">--info</code>
+      <var class="Ar">info</var> [<code class="Fl">--output-len</code>
+      <var class="Ar">n</var>] [<code class="Fl">--raw</code>]</td>
+  </tr>
+</table>
+<br/>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">hkdf-tree</code></td>
+    <td><code class="Cm">list</code> <code class="Fl">--config</code>
+      <var class="Ar">file</var> [<code class="Fl">-v</code>,
+      <code class="Fl">--verbose</code>] [<code class="Fl">--status</code>
+      <var class="Ar">status</var>] [<code class="Fl">--derivation</code>
+      <var class="Ar">kind</var>]</td>
+  </tr>
+</table>
+<br/>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">hkdf-tree</code></td>
+    <td><code class="Cm">show</code> <code class="Fl">--config</code>
+      <var class="Ar">file</var> <code class="Fl">--entry</code>
+      <var class="Ar">info-string</var> [<code class="Fl">--newline</code>]</td>
+  </tr>
+</table>
+<br/>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">hkdf-tree</code></td>
+    <td><code class="Cm">report</code> <code class="Fl">--config</code>
+      <var class="Ar">file</var> <code class="Fl">--output</code>
+      <var class="Ar">file</var> [<code class="Fl">--title</code>
+      <var class="Ar">title</var>] [<code class="Fl">--subtitle</code>
+      <var class="Ar">subtitle</var>] [<code class="Fl">--fingerprint</code>
+      <var class="Ar">fp</var>] [<code class="Fl">--entry</code>
+      <var class="Ar">info-string</var>] [<code class="Fl">--status</code>
+      <var class="Ar">status</var>] [<code class="Fl">--derivation</code>
+      <var class="Ar">kind</var>]</td>
+  </tr>
+</table>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h2>
+<p class="Pp"><code class="Nm">hkdf-tree</code> derives passphrases
+    deterministically from a single high-entropy master seed using HKDF-SHA256
+    (RFC 5869). Each credential is identified by a hierarchical info-string of
+    the form
+    <span class="Pa">&lt;domain&gt;/&lt;realm&gt;/&lt;purpose&gt;-v&lt;N&gt;</span>,
+    declared in a YAML inventory together with its encoding (Diceware,
+    alphanumeric, numeric, or base64). The same seed, salt, and info-string
+    always reproduce the same passphrase; nothing derived is ever stored.</p>
+<p class="Pp" id="raw">Subcommands that derive (<code class="Cm">derive</code>,
+    <code class="Cm">show</code>, <code class="Cm">report</code>) read the
+    master seed as <a class="permalink" href="#raw"><i class="Em">raw
+    bytes</i></a> from standard input. Hex-encoded seeds must be decoded first,
+    for example with &#x2018;<code class="Li">xxd -r -p</code>&#x2019;.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SUBCOMMANDS"><a class="permalink" href="#SUBCOMMANDS">SUBCOMMANDS</a></h2>
+<dl class="Bl-tag">
+  <dt id="derive"><a class="permalink" href="#derive"><code class="Cm">derive</code></a></dt>
+  <dd>Apply HKDF-SHA256 to the seed on stdin with <code class="Fl">--salt</code>
+      and <code class="Fl">--info</code>, and write
+      <code class="Fl">--output-len</code> bytes (default 32) to stdout,
+      hex-encoded unless <code class="Fl">--raw</code> is given. This is the
+      low-level primitive; it does not consult an inventory.</dd>
+  <dt id="list"><a class="permalink" href="#list"><code class="Cm">list</code></a></dt>
+  <dd>Load and validate the inventory given by <code class="Fl">--config</code>
+      and print one info-string per entry, deterministically sorted.
+      <code class="Fl">-v</code> adds derivation kind, status, and encoding per
+      line. <code class="Fl">--status</code> (<var class="Ar">active</var>,
+      <var class="Ar">retired</var>, <var class="Ar">reserved</var>) and
+      <code class="Fl">--derivation</code> (<var class="Ar">hkdf</var>,
+      <var class="Ar">manual</var>, <var class="Ar">service-generated</var>)
+      filter the listing and may be repeated.</dd>
+  <dt id="show"><a class="permalink" href="#show"><code class="Cm">show</code></a></dt>
+  <dd>Derive and encode a single entry, looked up by
+      <code class="Fl">--entry</code>, and print the resulting passphrase to
+      stdout without a trailing newline (add one with
+      <code class="Fl">--newline</code>). Entries with
+      <var class="Ar">manual</var> or <var class="Ar">service-generated</var>
+      derivation are refused.</dd>
+  <dt id="report"><a class="permalink" href="#report"><code class="Cm">report</code></a></dt>
+  <dd>Generate a printable A4 PDF (<code class="Fl">--output</code>), one card
+      per inventory entry: a human-readable title (the purpose's
+      <code class="Ic">usage</code> text) next to a QR code, followed by
+      info-string, encoding, passphrase, paper-backup destinations, and notes.
+      The output file is created with mode 0600.
+      <code class="Fl">--fingerprint</code> prints a short seed fingerprint on
+      the cover page for cross-verification against the paper backup.
+    <p class="Pp" id="before">By default every entry is included.
+        <code class="Fl">--entry</code> restricts the report to the given
+        info-string and may be repeated; <code class="Fl">--status</code> and
+        <code class="Fl">--derivation</code> filter as they do for
+        <code class="Cm">list</code>, but apply only when
+        <code class="Fl">--entry</code> is absent, so an explicitly named entry
+        can never be dropped silently. Selection happens
+        <a class="permalink" href="#before"><i class="Em">before</i></a>
+        derivation: passphrases of unselected entries are never computed and
+        therefore never reach the output file. Reprinting one card thus exposes
+        exactly that one secret. An info-string that matches nothing is an
+        error, and no file is written &#x2014; otherwise a typo would be
+        indistinguishable from a successful run until the passphrase is needed
+        and cannot be reproduced.</p>
+  </dd>
+</dl>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h2>
+<p class="Pp">The <code class="Nm">hkdf-tree</code> utility exits&#x00A0;0 on
+    success, and&#x00A0;&gt;0 if an error occurs. A usage error (unknown flag,
+    missing argument) exits with status 2.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h2>
+<p class="Pp">Derive the low-level bytes for one entry:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>xxd -r -p seed.hex | hkdf-tree derive \
+    --salt acme-hkdf-v1 --info alice/laptop/fde-daily-v1</pre>
+</div>
+<p class="Pp">List all active HKDF-derived entries:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>hkdf-tree list --config ~/.config/hkdf-tree/inventory.yaml \
+    --status active --derivation hkdf -v</pre>
+</div>
+<p class="Pp">Reproduce one passphrase:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>hkdf-tree show --config inventory.yaml \
+    --entry alice/laptop/fde-daily-v1 --newline &lt; seed.bin</pre>
+</div>
+<p class="Pp">Generate the paper-backup report:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>hkdf-tree report --config inventory.yaml \
+    --output /tmp/report.pdf --subtitle &quot;$(date +%F)&quot; &lt; seed.bin</pre>
+</div>
+<p class="Pp">Reprint a single card, deriving nothing else:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>hkdf-tree report --config inventory.yaml \
+    --entry alice/laptop/fde-recovery-v1 \
+    --output /tmp/one.pdf &lt; seed.bin</pre>
+</div>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h2>
+<p class="Pp"><a class="Xr" aria-label="gpg, section 1">gpg(1)</a>, RFC 5869</p>
+<p class="Pp">Project documentation: <span class="Pa">README.md</span>,
+    <span class="Pa">docs/</span> in the source repository.</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h2>
+<p class="Pp"><span class="An">Dr. Johannes Br&#x00FC;gmann</span>
+    &lt;<a class="Mt" href="mailto:dr.johannes.bruegmann@gmail.com">dr.johannes.bruegmann@gmail.com</a>&gt;</p>
+</section>
+<section class="Sh">
+<h2 class="Sh" id="SECURITY_CONSIDERATIONS"><a class="permalink" href="#SECURITY_CONSIDERATIONS">SECURITY
+  CONSIDERATIONS</a></h2>
+<p class="Pp">The PDF report contains every derived passphrase in plaintext.
+    Write it to volatile storage (tmpfs), print on an offline printer, and
+    destroy the file afterwards; the tool never encrypts anything itself. The
+    master seed should only be entered on trusted, preferably air-gapped
+    systems. The inventory file contains no secrets, only structure and public
+    parameters (including the salt), and may be backed up freely.</p>
+</section>
+</main>
+<div class="foot" role="doc-pagefooter" aria-label="Manual footer
+  line"><span class="foot-left">FreeBSD 15.1-RELEASE-p2</span>
+  <span class="foot-date">August 2, 2026</span>
+  <span class="foot-right">HKDF-TREE(1)</span></div>
+</body>
+</html>
