@@ -1,0 +1,349 @@
+# ===========================================================================
+# hkdf-tree — EXAMPLE INVENTORY
+#
+# A deliberately exhaustive, entirely FICTIONAL inventory for one person:
+# Sam Miller — who has a laptop, a phone, a home network, too many online
+# accounts, and a small family bakery with its own IT. No real credentials
+# are described here; every entry exists to demonstrate one feature of the
+# inventory format.
+#
+# The one rule that matters
+# -------------------------
+# Only FOUR things influence a derived passphrase:
+#
+#   1. the names on the path        (domain / realm / purpose)
+#   2. the version number           (-v1, -v2, ...)
+#   3. the domain salt
+#   4. the encoding parameters      (type, wordlist, length / bytes)
+#
+# Everything else (kind, usage, status, memorized, paper_backup, notes) is
+# documentation. Change it freely; your passwords will not move. Likewise,
+# the ORDER of blocks in this file is irrelevant — insert new entries
+# anywhere without affecting existing ones.
+#
+# Try it:
+#   hkdf-tree list   --config examples/inventory-example.yaml
+#   head -c 32 /dev/urandom \
+#     | hkdf-tree show --config examples/inventory-example.yaml \
+#         --entry sam/laptop/disk-unlock-v1
+# ===========================================================================
+
+schema_version: 1
+
+domains:
+
+  # =========================================================================
+  # Domain 1: Sam's personal life.
+  #
+  # The salt is public. It only provides namespace separation, so that
+  # `sam/...` and `millers-bakery/...` derivations can never collide even
+  # if info-strings were ever to look alike. Pick it once, write it down,
+  # never change it (changing it would rotate every password in the domain).
+  # =========================================================================
+  sam:
+    salt: "sam-miller-hkdf-2026"
+
+    realms:
+
+      # -- The everyday laptop --------------------------------------------
+      laptop:
+        kind: workstation
+        purposes:
+
+          disk-unlock:
+            usage: "Full-disk-encryption passphrase, typed at every boot"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 8 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: [home-safe, bank-vault]
+                notes: >-
+                  Typed daily, so it must live in Sam's head — but deriving
+                  it means a forgotten passphrase is a recovery step, not
+                  a data loss.
+
+          firmware-setup:
+            usage: "UEFI/BIOS setup password"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 5 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [home-safe]
+
+          backup-drive:
+            usage: "Encryption passphrase of the external backup drive"
+            versions:
+              # A completed rotation, kept for the paper trail:
+              # v1 was used 2024-2026 and is retired; v2 is current.
+              # NEVER delete retired versions — old backups may still
+              # need them, and the entry documents when the switch
+              # happened.
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 6 }
+                derivation: hkdf
+                status: retired
+                paper_backup: [bank-vault]
+                notes: "Rotated 2026-05 after the drive travelled unattended."
+              2:
+                encoding: { type: diceware, wordlist: eff_large, length: 7 }
+                derivation: hkdf
+                status: active
+                paper_backup: [home-safe, bank-vault]
+
+          keyfile:
+            usage: "Raw keyfile material for an encrypted scratch volume"
+            versions:
+              1:
+                # base64 encoding emits raw HKDF bytes — for keyfiles,
+                # API secrets, or anything a machine (not a human) types.
+                encoding: { type: base64, bytes: 32 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: []
+                notes: "Regenerated on demand; never stored anywhere."
+
+      # -- The phone -------------------------------------------------------
+      phone:
+        kind: phone
+        purposes:
+
+          lockscreen:
+            usage: "Phone unlock passphrase"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 5 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: [home-safe]
+
+          sim-pin:
+            usage: "PIN of the SIM card"
+            versions:
+              1:
+                # numeric encoding: for anything that only accepts digits.
+                encoding: { type: numeric, length: 6 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: [home-safe]
+
+          sim-puk:
+            usage: "PUK of the SIM card"
+            versions:
+              1:
+                # The provider generates the PUK; no tool can derive it.
+                # service-generated entries document that a secret EXISTS
+                # and where its backup lives — hkdf-tree will refuse to
+                # derive them.
+                encoding: { type: numeric, length: 8 }
+                derivation: service-generated
+                status: active
+                paper_backup: [bank-vault]
+
+      # -- Home network ----------------------------------------------------
+      home-wifi:
+        kind: network
+        purposes:
+
+          wpa-passphrase:
+            usage: "Wi-Fi password, shared with family and guests"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 5 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [home-safe]
+                notes: "Written on the fridge whiteboard; rotate when guests move out."
+
+          router-admin:
+            usage: "Router web-admin login"
+            versions:
+              1:
+                # alphanumeric: for forms that reject spaces or have
+                # length limits, where diceware phrases don't fit.
+                encoding: { type: alphanumeric, length: 20 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [home-safe]
+
+      # -- Online accounts -------------------------------------------------
+      email:
+        kind: cloud-service
+        purposes:
+          account:
+            usage: "Primary mail account — the recovery hub for everything else"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 7 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [home-safe, bank-vault]
+          2fa-recovery:
+            usage: "Printed one-time recovery codes"
+            versions:
+              1:
+                encoding: { type: base64, bytes: 16 }
+                derivation: service-generated
+                status: active
+                paper_backup: [bank-vault]
+
+      bank:
+        kind: cloud-service
+        purposes:
+          web-login:
+            usage: "Online-banking portal"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 7 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [bank-vault]
+          card-pin:
+            usage: "Debit-card PIN"
+            versions:
+              1:
+                # The bank assigned this PIN years ago; Sam documents it
+                # here as `manual` so the inventory stays a COMPLETE map
+                # of every secret, even the ones this tool cannot derive.
+                encoding: { type: numeric, length: 4 }
+                derivation: manual
+                status: active
+                memorized: true
+                paper_backup: []
+                notes: "Assigned by the bank; documented for completeness only."
+
+      streaming:
+        kind: cloud-service
+        purposes:
+          account:
+            usage: "Family movie-night subscription"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 4 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: []
+                notes: "Low value; four words is plenty and the TV remote is slow."
+
+      # -- Small physical stuff -------------------------------------------
+      luggage:
+        kind: physical
+        purposes:
+          suitcase-lock:
+            usage: "3-digit combination lock on the travel suitcase"
+            versions:
+              1:
+                encoding: { type: numeric, length: 3 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: []
+                notes: >-
+                  Yes, even a suitcase lock can be derived — nothing to
+                  remember, nothing to lose. Security theatre, but
+                  CONSISTENT security theatre.
+
+      garage:
+        kind: physical
+        purposes:
+          door-keypad:
+            usage: "Keypad code of the garage door (planned install)"
+            versions:
+              1:
+                # reserved: the credential is planned but not yet set.
+                # Reserving the entry now fixes the name and parameters,
+                # so the code can be derived the day the keypad arrives.
+                encoding: { type: numeric, length: 6 }
+                derivation: hkdf
+                status: reserved
+                paper_backup: [home-safe]
+
+  # =========================================================================
+  # Domain 2: the family bakery.
+  #
+  # Same master seed, separate namespace and salt. If the bakery is ever
+  # sold, every `millers-bakery/...` credential can be rotated or handed
+  # over without touching anything personal.
+  # =========================================================================
+  millers-bakery:
+    salt: "millers-bakery-hkdf-2026"
+
+    realms:
+
+      office-pc:
+        kind: workstation
+        purposes:
+          disk-unlock:
+            usage: "FDE passphrase of the bakery office PC"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 6 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: [bakery-safe]
+
+      cash-register:
+        kind: appliance
+        purposes:
+          manager-pin:
+            usage: "Manager override PIN on the point-of-sale terminal"
+            versions:
+              1:
+                encoding: { type: numeric, length: 6 }
+                derivation: hkdf
+                status: active
+                memorized: true
+                paper_backup: [bakery-safe]
+
+      accounting:
+        kind: cloud-service
+        purposes:
+          portal-login:
+            usage: "Cloud bookkeeping portal"
+            versions:
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 6 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [bakery-safe, bank-vault]
+          tax-office-token:
+            usage: "Certificate passphrase for filing the quarterly taxes"
+            versions:
+              1:
+                encoding: { type: alphanumeric, length: 16 }
+                derivation: hkdf
+                status: active
+                memorized: false
+                paper_backup: [bakery-safe]
+
+      shop-wifi:
+        kind: network
+        purposes:
+          guest-passphrase:
+            usage: "Customer Wi-Fi, printed on the counter sign"
+            versions:
+              # Rotated every season on purpose — an example of routine,
+              # planned rotation: bump the version, print a new sign.
+              1:
+                encoding: { type: diceware, wordlist: eff_large, length: 4 }
+                derivation: hkdf
+                status: retired
+                notes: "Spring sign."
+              2:
+                encoding: { type: diceware, wordlist: eff_large, length: 4 }
+                derivation: hkdf
+                status: active
+                notes: "Summer sign."

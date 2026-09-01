@@ -1,0 +1,175 @@
+.\" hkdf-tree — deterministic hierarchical passphrase derivation
+.\" SPDX-License-Identifier: BSD-2-Clause
+.Dd August 2, 2026
+.Dt HKDF-TREE 1
+.Os
+.Sh NAME
+.Nm hkdf-tree
+.Nd deterministic hierarchical passphrase derivation from a master seed
+.Sh SYNOPSIS
+.Nm
+.Cm derive
+.Op Fl \-salt Ar salt
+.Fl \-info Ar info
+.Op Fl \-output-len Ar n
+.Op Fl \-raw
+.Nm
+.Cm list
+.Fl \-config Ar file
+.Op Fl v , \-verbose
+.Op Fl \-status Ar status
+.Op Fl \-derivation Ar kind
+.Nm
+.Cm show
+.Fl \-config Ar file
+.Fl \-entry Ar info-string
+.Op Fl \-newline
+.Nm
+.Cm report
+.Fl \-config Ar file
+.Fl \-output Ar file
+.Op Fl \-title Ar title
+.Op Fl \-subtitle Ar subtitle
+.Op Fl \-fingerprint Ar fp
+.Op Fl \-entry Ar info-string
+.Op Fl \-status Ar status
+.Op Fl \-derivation Ar kind
+.Sh DESCRIPTION
+.Nm
+derives passphrases deterministically from a single high-entropy master
+seed using HKDF-SHA256 (RFC 5869).
+Each credential is identified by a hierarchical info-string of the form
+.Pa <domain>/<realm>/<purpose>-v<N> ,
+declared in a YAML inventory together with its encoding (Diceware,
+alphanumeric, numeric, or base64).
+The same seed, salt, and info-string always reproduce the same
+passphrase; nothing derived is ever stored.
+.Pp
+Subcommands that derive
+.Pq Cm derive , Cm show , Cm report
+read the master seed as
+.Em raw bytes
+from standard input.
+Hex-encoded seeds must be decoded first, for example with
+.Ql xxd -r -p .
+.Sh SUBCOMMANDS
+.Bl -tag -width Ds
+.It Cm derive
+Apply HKDF-SHA256 to the seed on stdin with
+.Fl \-salt
+and
+.Fl \-info ,
+and write
+.Fl \-output-len
+bytes (default 32) to stdout, hex-encoded unless
+.Fl \-raw
+is given.
+This is the low-level primitive; it does not consult an inventory.
+.It Cm list
+Load and validate the inventory given by
+.Fl \-config
+and print one info-string per entry, deterministically sorted.
+.Fl v
+adds derivation kind, status, and encoding per line.
+.Fl \-status
+.Pq Ar active , retired , reserved
+and
+.Fl \-derivation
+.Pq Ar hkdf , manual , service-generated
+filter the listing and may be repeated.
+.It Cm show
+Derive and encode a single entry, looked up by
+.Fl \-entry ,
+and print the resulting passphrase to stdout without a trailing
+newline (add one with
+.Fl \-newline ) .
+Entries with
+.Ar manual
+or
+.Ar service-generated
+derivation are refused.
+.It Cm report
+Generate a printable A4 PDF
+.Pq Fl \-output ,
+one card per inventory entry: a human-readable title (the purpose's
+.Ic usage
+text) next to a QR code, followed by info-string, encoding,
+passphrase, paper-backup destinations, and notes.
+The output file is created with mode 0600.
+.Fl \-fingerprint
+prints a short seed fingerprint on the cover page for
+cross-verification against the paper backup.
+.Pp
+By default every entry is included.
+.Fl \-entry
+restricts the report to the given info-string and may be repeated;
+.Fl \-status
+and
+.Fl \-derivation
+filter as they do for
+.Cm list ,
+but apply only when
+.Fl \-entry
+is absent, so an explicitly named entry can never be dropped silently.
+Selection happens
+.Em before
+derivation: passphrases of unselected entries are never computed and
+therefore never reach the output file.
+Reprinting one card thus exposes exactly that one secret.
+An info-string that matches nothing is an error, and no file is written
+\(em otherwise a typo would be indistinguishable from a successful run
+until the passphrase is needed and cannot be reproduced.
+.El
+.Sh EXIT STATUS
+.Ex -std
+A usage error (unknown flag, missing argument) exits with status 2.
+.Sh EXAMPLES
+Derive the low-level bytes for one entry:
+.Bd -literal -offset indent
+xxd -r -p seed.hex | hkdf-tree derive \e
+    --salt acme-hkdf-v1 --info alice/laptop/fde-daily-v1
+.Ed
+.Pp
+List all active HKDF-derived entries:
+.Bd -literal -offset indent
+hkdf-tree list --config ~/.config/hkdf-tree/inventory.yaml \e
+    --status active --derivation hkdf -v
+.Ed
+.Pp
+Reproduce one passphrase:
+.Bd -literal -offset indent
+hkdf-tree show --config inventory.yaml \e
+    --entry alice/laptop/fde-daily-v1 --newline < seed.bin
+.Ed
+.Pp
+Generate the paper-backup report:
+.Bd -literal -offset indent
+hkdf-tree report --config inventory.yaml \e
+    --output /tmp/report.pdf --subtitle "$(date +%F)" < seed.bin
+.Ed
+.Pp
+Reprint a single card, deriving nothing else:
+.Bd -literal -offset indent
+hkdf-tree report --config inventory.yaml \e
+    --entry alice/laptop/fde-recovery-v1 \e
+    --output /tmp/one.pdf < seed.bin
+.Ed
+.Sh SEE ALSO
+.Xr gpg 1 ,
+RFC 5869
+.Pp
+Project documentation:
+.Pa README.md ,
+.Pa docs/
+in the source repository.
+.Sh AUTHORS
+.An Dr. Johannes Brügmann Aq Mt dr.johannes.bruegmann@gmail.com
+.Sh SECURITY CONSIDERATIONS
+The PDF report contains every derived passphrase in plaintext.
+Write it to volatile storage (tmpfs), print on an offline printer,
+and destroy the file afterwards; the tool never encrypts anything
+itself.
+The master seed should only be entered on trusted, preferably
+air-gapped systems.
+The inventory file contains no secrets, only structure and public
+parameters (including the salt), and may be backed up freely.
