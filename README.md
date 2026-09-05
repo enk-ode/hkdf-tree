@@ -1,4 +1,4 @@
-# hkdf-tree
+# [hkdf-tree](https://enk-ode.github.io/hkdf-tree/)
 
 Deterministic hierarchical passphrase derivation from a single master seed via HKDF-SHA256.
 
@@ -17,7 +17,7 @@ Given:
 - A **master seed** (256 bits of entropy, typically stored as a BIP-39 24-word phrase in cold storage), and
 - A **YAML inventory** describing a hierarchy of derivations by domain, realm, and purpose,
 
-`hkdf-tree` produces:
+[`hkdf-tree`](https://enk-ode.github.io/hkdf-tree/) produces:
 
 - Deterministic passphrases (Diceware, alphanumeric, numeric PINs, base64 blobs) for every entry in the inventory, and
 - A printable PDF report with QR codes for physical paper backup.
