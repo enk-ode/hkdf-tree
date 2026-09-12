@@ -14,7 +14,7 @@ restore drill (see `docs/cookbook.md`).
 For security-relevant issues **do not** open a public GitHub issue.
 
 Please contact the maintainer privately: `dr.johannes.bruegmann@gmail.com`,
-or via the GitHub profile of `johannes-bruegmann`.
+or via the GitHub profile of `enk-ode`.
 
 ## Scope
 

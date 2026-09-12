@@ -89,5 +89,5 @@ Initial release.
   namespace, and every encoding parameter live in the user's YAML
   inventory. The binary is generic and reusable.
 
-[Unreleased]: https://github.com/johannes-bruegmann/hkdf-tree/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/johannes-bruegmann/hkdf-tree/releases/tag/v0.1.0
+[Unreleased]: https://github.com/enk-ode/hkdf-tree/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/enk-ode/hkdf-tree/releases/tag/v0.1.0
